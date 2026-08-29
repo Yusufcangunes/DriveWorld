@@ -2,60 +2,93 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>DRIVEWORLD</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
 
-    <link rel="stylesheet" href="style.css">
+    <title>DriveWorld</title>
+
+    <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
-<div id="loading">
-    <div class="loading-title">DRIVEWORLD</div>
-    <div class="loading-text">Yükleniyor...</div>
-</div>
-
-<div id="game-ui">
-    <div class="logo">DRIVEWORLD</div>
-
-    <div class="speed-box">
-        <span id="speed">0</span>
-        <small>KM/H</small>
-    </div>
-</div>
-
-<!-- GERÇEK ARABA KONTROLLERİ -->
-
-<div id="controls">
-
-    <!-- Direksiyon -->
-    <div id="steering-wheel">
-        <div id="wheel-ring">
-            <div class="wheel-spoke spoke-top"></div>
-            <div class="wheel-spoke spoke-left"></div>
-            <div class="wheel-spoke spoke-right"></div>
-            <div class="wheel-center">DW</div>
+    <!-- Yükleme ekranı -->
+    <div id="loading">
+        <div class="loading-title">DRIVEWORLD</div>
+        <div class="loading-text" id="loading-text">
+            Dünya hazırlanıyor...
         </div>
     </div>
 
-    <!-- Pedallar -->
-    <div id="pedals">
 
-        <button id="brake" class="pedal brake">
-            <span>FREN</span>
-        </button>
+    <!-- Oyun arayüzü -->
+    <div id="game-ui">
 
-        <button id="gas" class="pedal gas">
-            <span>GAZ</span>
-        </button>
+        <div class="logo">
+            DRIVEWORLD
+        </div>
+
+        <div class="speed-box">
+            <span id="speed">0</span>
+            <small>KM/H</small>
+        </div>
 
     </div>
 
-</div>
 
-<script type="module" src="script.js"></script>
+    <!-- Mobil kontroller -->
+    <div id="mobile-controls">
+
+        <!-- Direksiyon -->
+        <div id="steering">
+
+            <button
+                id="left"
+                class="control-button steering-button"
+            >
+                ◀
+            </button>
+
+            <button
+                id="right"
+                class="control-button steering-button"
+            >
+                ▶
+            </button>
+
+        </div>
+
+
+        <!-- Gaz / Fren -->
+        <div id="pedals">
+
+            <button
+                id="brake"
+                class="control-button brake-button"
+            >
+                FREN
+            </button>
+
+            <button
+                id="gas"
+                class="control-button gas-button"
+            >
+                GAZ
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- Oyun -->
+    <script
+        type="module"
+        src="./script.js"
+    ></script>
 
 </body>
 </html>
