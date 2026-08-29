@@ -2,192 +2,375 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.m
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 80, 350);
 
 const camera = new THREE.PerspectiveCamera(
-    70,
+    65,
     window.innerWidth / window.innerHeight,
     0.1,
-    1000
+    500
 );
 
 const renderer = new THREE.WebGLRenderer({
-    antialias: true,
+    antialias: false,
     powerPreference: "high-performance"
 });
 
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.shadowMap.enabled = false;
+
 document.body.appendChild(renderer.domElement);
 
+
+// ====================
 // IŞIK
-const sun = new THREE.DirectionalLight(0xffffff, 2);
-sun.position.set(50, 100, 50);
+// ====================
+
+const sun = new THREE.DirectionalLight(0xffffff, 1.8);
+sun.position.set(50, 100, 30);
 scene.add(sun);
 
 scene.add(new THREE.AmbientLight(0xffffff, 0.7));
 
+
+// ====================
 // ZEMİN
+// ====================
+
 const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(500, 500),
-    new THREE.MeshStandardMaterial({
-        color: 0x3b8d3b
+    new THREE.MeshLambertMaterial({
+        color: 0x3f9142
     })
 );
 
 ground.rotation.x = -Math.PI / 2;
 scene.add(ground);
 
+
+// ====================
 // YOL
+// ====================
+
 const road = new THREE.Mesh(
-    new THREE.PlaneGeometry(18, 500),
-    new THREE.MeshStandardMaterial({
-        color: 0x333333
+    new THREE.PlaneGeometry(16, 500),
+    new THREE.MeshLambertMaterial({
+        color: 0x303030
     })
 );
 
 road.rotation.x = -Math.PI / 2;
-road.position.y = 0.01;
+road.position.y = 0.02;
+
 scene.add(road);
 
+
+// Yol çizgileri
+
+for (let z = -240; z < 240; z += 12) {
+
+    const line = new THREE.Mesh(
+        new THREE.BoxGeometry(0.25, 0.03, 6),
+        new THREE.MeshBasicMaterial({
+            color: 0xffffff
+        })
+    );
+
+    line.position.set(0, 0.05, z);
+
+    scene.add(line);
+}
+
+
+// ====================
 // ARABA
+// ====================
+
 const car = new THREE.Group();
 
+
+// Gövde
+
 const body = new THREE.Mesh(
-    new THREE.BoxGeometry(2.2, 0.7, 4),
-    new THREE.MeshStandardMaterial({
-        color: 0xff2020
+    new THREE.BoxGeometry(2.3, 0.65, 4.2),
+    new THREE.MeshLambertMaterial({
+        color: 0xe60000
     })
 );
 
-body.position.y = 0.8;
+body.position.y = 0.75;
+
 car.add(body);
+
+
+// Kabin
 
 const cabin = new THREE.Mesh(
     new THREE.BoxGeometry(1.7, 0.65, 2),
-    new THREE.MeshStandardMaterial({
-        color: 0x222222
+    new THREE.MeshLambertMaterial({
+        color: 0x20252b
     })
 );
 
-cabin.position.y = 1.35;
-cabin.position.z = -0.2;
+cabin.position.set(0, 1.3, -0.25);
+
 car.add(cabin);
 
-// TEKERLEKLER
-function wheel(x, z) {
-    const w = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.42, 0.42, 0.3, 16),
-        new THREE.MeshStandardMaterial({
+
+// Tekerlek oluşturma
+
+function createWheel(x, z) {
+
+    const wheel = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.42, 0.42, 0.32, 12),
+        new THREE.MeshLambertMaterial({
             color: 0x111111
         })
     );
 
-    w.rotation.z = Math.PI / 2;
-    w.position.set(x, 0.45, z);
-    car.add(w);
+    wheel.rotation.z = Math.PI / 2;
+
+    wheel.position.set(x, 0.45, z);
+
+    car.add(wheel);
 }
 
-wheel(-1.15, 1.3);
-wheel(1.15, 1.3);
-wheel(-1.15, -1.3);
-wheel(1.15, -1.3);
+createWheel(-1.2, 1.35);
+createWheel(1.2, 1.35);
+createWheel(-1.2, -1.35);
+createWheel(1.2, -1.35);
 
 scene.add(car);
 
-camera.position.set(0, 5, 8);
-camera.lookAt(car.position);
 
+// ====================
 // MOBİL KONTROLLER
+// ====================
+
 let gas = false;
 let brake = false;
 let left = false;
 let right = false;
 
-const buttons = {
-    gas: document.getElementById("gas"),
-    brake: document.getElementById("brake"),
-    left: document.getElementById("left"),
-    right: document.getElementById("right")
-};
+const gasButton = document.getElementById("gas");
+const brakeButton = document.getElementById("brake");
+const leftButton = document.getElementById("left");
+const rightButton = document.getElementById("right");
 
-function hold(button, start, end) {
+
+function buttonControl(button, start, end) {
+
     if (!button) return;
 
-    button.addEventListener("touchstart", e => {
+    button.addEventListener("touchstart", function(e) {
         e.preventDefault();
         start();
-    });
+    }, { passive: false });
 
-    button.addEventListener("touchend", e => {
+    button.addEventListener("touchend", function(e) {
         e.preventDefault();
         end();
-    });
+    }, { passive: false });
 
     button.addEventListener("touchcancel", end);
 }
 
-hold(buttons.gas, () => gas = true, () => gas = false);
-hold(buttons.brake, () => brake = true, () => brake = false);
-hold(buttons.left, () => left = true, () => left = false);
-hold(buttons.right, () => right = true, () => right = false);
+
+buttonControl(
+    gasButton,
+    () => gas = true,
+    () => gas = false
+);
+
+buttonControl(
+    brakeButton,
+    () => brake = true,
+    () => brake = false
+);
+
+buttonControl(
+    leftButton,
+    () => left = true,
+    () => left = false
+);
+
+buttonControl(
+    rightButton,
+    () => right = true,
+    () => right = false
+);
+
+
+// ====================
+// ARABA FİZİĞİ
+// ====================
 
 let speed = 0;
 
-function update() {
+const acceleration = 0.018;
+const brakePower = 0.035;
+const friction = 0.985;
+const maxSpeed = 1.3;
+
+
+function updateCar() {
+
+    // Gaz
 
     if (gas) {
-        speed += 0.015;
+        speed += acceleration;
     }
+
+    // Fren
 
     if (brake) {
-        speed -= 0.03;
+
+        if (speed > 0) {
+            speed -= brakePower;
+        } else {
+            speed += brakePower;
+        }
     }
 
-    speed *= 0.98;
+    // Yavaşlama
 
-    speed = Math.max(-0.5, Math.min(speed, 1.2));
+    speed *= friction;
 
-    if (left) {
-        car.rotation.y += 0.025 * Math.abs(speed);
+    // Hız sınırı
+
+    speed = THREE.MathUtils.clamp(
+        speed,
+        -0.5,
+        maxSpeed
+    );
+
+
+    // Direksiyon
+
+    if (Math.abs(speed) > 0.02) {
+
+        const steeringPower = 0.035 * Math.min(
+            Math.abs(speed),
+            1
+        );
+
+        if (left) {
+            car.rotation.y += steeringPower;
+        }
+
+        if (right) {
+            car.rotation.y -= steeringPower;
+        }
     }
 
-    if (right) {
-        car.rotation.y -= 0.025 * Math.abs(speed);
-    }
+
+    // Arabayı hareket ettir
 
     car.translateZ(-speed);
 
-    const kmh = Math.round(Math.abs(speed) * 80);
 
-    const speedText = document.getElementById("speed");
+    // Hız göstergesi
 
-    if (speedText) {
-        speedText.textContent = kmh;
+    const speedDisplay = document.getElementById("speed");
+
+    if (speedDisplay) {
+
+        const kmh = Math.round(
+            Math.abs(speed) * 80
+        );
+
+        speedDisplay.textContent = kmh;
     }
-
-    // KAMERA
-    const target = new THREE.Vector3(0, 3.5, 7);
-    target.applyMatrix4(car.matrixWorld);
-
-    camera.position.lerp(target, 0.1);
-    camera.lookAt(car.position.x, car.position.y + 0.7, car.position.z);
 }
 
-function animate() {
-    requestAnimationFrame(animate);
 
-    update();
+// ====================
+// KAMERA
+// ====================
 
-    renderer.render(scene, camera);
+const cameraOffset = new THREE.Vector3(
+    0,
+    4.5,
+    8
+);
+
+
+function updateCamera() {
+
+    const targetPosition = cameraOffset.clone();
+
+    targetPosition.applyMatrix4(car.matrixWorld);
+
+    camera.position.lerp(
+        targetPosition,
+        0.12
+    );
+
+    camera.lookAt(
+        car.position.x,
+        car.position.y + 0.7,
+        car.position.z
+    );
 }
+
+
+// ====================
+// BAŞLANGIÇ
+// ====================
+
+camera.position.set(
+    0,
+    4.5,
+    8
+);
+
+camera.lookAt(car.position);
+
+
+// ====================
+// OYUN DÖNGÜSÜ
+// ====================
+
+function gameLoop() {
+
+    requestAnimationFrame(gameLoop);
+
+    updateCar();
+
+    updateCamera();
+
+    renderer.render(
+        scene,
+        camera
+    );
+}
+
+
+// Yükleme ekranını kapat
+
+const loading = document.getElementById("loading");
+
+if (loading) {
+    loading.style.display = "none";
+}
+
+
+// Telefon ekranı değişirse
 
 window.addEventListener("resize", () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
+
+    camera.aspect =
+        window.innerWidth /
+        window.innerHeight;
+
     camera.updateProjectionMatrix();
 
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
 });
 
-document.getElementById("loading").style.display = "none";
 
-animate();
+gameLoop();
