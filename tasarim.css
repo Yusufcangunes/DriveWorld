@@ -3,8 +3,9 @@
     padding: 0;
     box-sizing: border-box;
 
-    -webkit-tap-highlight-color: transparent;
     user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 html,
@@ -14,11 +15,11 @@ body {
 
     overflow: hidden;
 
-    background: #87ceeb;
-
-    font-family: Arial, sans-serif;
+    background: #000;
 
     touch-action: none;
+
+    font-family: Arial, sans-serif;
 }
 
 body {
@@ -28,8 +29,7 @@ body {
 #gameCanvas {
     position: fixed;
 
-    left: 0;
-    top: 0;
+    inset: 0;
 
     width: 100%;
     height: 100%;
@@ -37,9 +37,8 @@ body {
     display: block;
 }
 
-/* =========================
-   YÜKLEME EKRANI
-========================= */
+
+/* YÜKLEME */
 
 #loading {
     position: fixed;
@@ -53,15 +52,9 @@ body {
     flex-direction: column;
 
     justify-content: center;
-
     align-items: center;
 
-    background:
-        linear-gradient(
-            180deg,
-            #111 0%,
-            #050505 100%
-        );
+    background: #101010;
 
     color: white;
 }
@@ -72,18 +65,14 @@ body {
     font-weight: 900;
 
     letter-spacing: 6px;
-
-    text-align: center;
 }
 
 #loadingText {
     margin-top: 15px;
 
-    font-size: 15px;
-
     color: #aaa;
 
-    text-align: center;
+    font-size: 15px;
 }
 
 .loading-bar {
@@ -91,11 +80,11 @@ body {
 
     height: 6px;
 
-    margin-top: 22px;
-
-    border-radius: 10px;
+    margin-top: 20px;
 
     background: #333;
+
+    border-radius: 10px;
 
     overflow: hidden;
 }
@@ -105,14 +94,13 @@ body {
 
     height: 100%;
 
-    background: #fff;
+    background: white;
 
-    transition: width 0.2s ease;
+    transition: width 0.2s;
 }
 
-/* =========================
-   OYUN ARAYÜZÜ
-========================= */
+
+/* HUD */
 
 #gameUI {
     position: fixed;
@@ -122,6 +110,8 @@ body {
     z-index: 20;
 
     pointer-events: none;
+
+    color: white;
 }
 
 .logo {
@@ -130,16 +120,13 @@ body {
     top: 18px;
     left: 18px;
 
-    color: white;
-
-    font-size: 19px;
+    font-size: 20px;
 
     font-weight: 900;
 
     letter-spacing: 3px;
 
-    text-shadow:
-        0 2px 5px #000;
+    text-shadow: 0 2px 5px black;
 }
 
 .speed-box {
@@ -148,12 +135,9 @@ body {
     top: 15px;
     right: 18px;
 
-    color: white;
-
     text-align: right;
 
-    text-shadow:
-        0 2px 5px #000;
+    text-shadow: 0 2px 5px black;
 }
 
 #speed {
@@ -166,13 +150,10 @@ body {
 
 .speed-box small {
     font-size: 11px;
-
-    font-weight: bold;
 }
 
-/* =========================
-   MOBİL KONTROLLER
-========================= */
+
+/* MOBİL */
 
 #mobileControls {
     position: fixed;
@@ -186,11 +167,11 @@ body {
     position: absolute;
 
     left: 18px;
-    bottom: 25px;
+    bottom: 22px;
 
     display: flex;
 
-    gap: 12px;
+    gap: 10px;
 
     pointer-events: auto;
 }
@@ -199,11 +180,11 @@ body {
     position: absolute;
 
     right: 18px;
-    bottom: 25px;
+    bottom: 22px;
 
     display: flex;
 
-    gap: 12px;
+    gap: 10px;
 
     align-items: flex-end;
 
@@ -211,24 +192,17 @@ body {
 }
 
 .control-button {
-    border: 2px solid rgba(255,255,255,0.55);
+    border: 2px solid rgba(255,255,255,0.5);
 
     color: white;
 
-    font-weight: 900;
-
-    background: rgba(15,15,15,0.72);
-
-    box-shadow:
-        0 5px 18px rgba(0,0,0,0.45);
+    font-weight: bold;
 
     touch-action: none;
 
-    -webkit-user-select: none;
-
-    user-select: none;
-
     outline: none;
+
+    box-shadow: 0 5px 15px rgba(0,0,0,0.45);
 }
 
 .control-button:active {
@@ -236,18 +210,20 @@ body {
 }
 
 .steering-button {
-    width: 72px;
-    height: 72px;
+    width: 70px;
+    height: 70px;
 
     border-radius: 50%;
 
-    font-size: 27px;
+    background: rgba(20,20,20,0.8);
+
+    font-size: 25px;
 }
 
 .gas-button,
 .brake-button {
-    width: 86px;
-    height: 86px;
+    width: 82px;
+    height: 82px;
 
     border-radius: 50%;
 
@@ -255,18 +231,21 @@ body {
 }
 
 .gas-button {
-    background: rgba(0,120,50,0.82);
+    background: rgba(0,125,45,0.85);
 }
 
 .brake-button {
-    background: rgba(170,20,20,0.82);
+    background: rgba(160,20,20,0.85);
 }
 
-/* =========================
-   TELEFONLAR
-========================= */
+
+/* KÜÇÜK TELEFON */
 
 @media (max-width: 420px) {
+
+    .loading-title {
+        font-size: 30px;
+    }
 
     .logo {
         font-size: 16px;
@@ -280,15 +259,15 @@ body {
     }
 
     #steering {
-        left: 12px;
-        bottom: 18px;
+        left: 10px;
+        bottom: 15px;
 
         gap: 8px;
     }
 
     #pedals {
-        right: 12px;
-        bottom: 18px;
+        right: 10px;
+        bottom: 15px;
 
         gap: 8px;
     }
@@ -296,15 +275,11 @@ body {
     .steering-button {
         width: 62px;
         height: 62px;
-
-        font-size: 23px;
     }
 
     .gas-button,
     .brake-button {
         width: 74px;
         height: 74px;
-
-        font-size: 12px;
     }
 }
