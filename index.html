@@ -3,12 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>DRIVEWORLD</title>
+
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <h1>DRIVEWORLD</h1>
-    <p>Açık dünya araba oyunu</p>
+    <div id="loading">
+        DRIVEWORLD
+        <span>Yükleniyor...</span>
+    </div>
+
+    <div id="game-ui">
+        <div class="logo">DRIVEWORLD</div>
+
+        <div class="info">
+            <div>HIZ: <span id="speed">0</span> KM/H</div>
+        </div>
+
+        <div class="controls">
+            <b>WASD</b> — Aracı sür
+            <br>
+            <b>SHIFT</b> — Hızlan
+            <br>
+            <b>SPACE</b> — Fren
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
 
 </body>
 </html>
