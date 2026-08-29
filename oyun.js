@@ -1,9 +1,14 @@
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+import { GLTFLoader } from
+"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+
 
 let scene;
 let camera;
 let renderer;
+
 let car = null;
 
 let speed = 0;
@@ -13,24 +18,34 @@ let brake = false;
 let left = false;
 let right = false;
 
+
 const MAX_SPEED = 1.2;
 const ACCELERATION = 0.025;
-const BRAKE = 0.06;
+const BRAKE_POWER = 0.06;
 const FRICTION = 0.012;
 
-const loading = document.getElementById("loading");
-const loadingText = document.getElementById("loadingText");
-const loadingProgress = document.getElementById("loadingProgress");
+
+const loading =
+    document.getElementById("loading");
+
+const loadingText =
+    document.getElementById("loadingText");
+
+const loadingProgress =
+    document.getElementById("loadingProgress");
 
 
-// ==========================================
-// OYUNU BAŞLAT
-// ==========================================
+/* =========================
+   BAŞLAT
+========================= */
 
-function startGame() {
+start();
 
-    // SAHNE
-    scene = new THREE.Scene();
+
+function start() {
+
+    scene =
+        new THREE.Scene();
 
     scene.background =
         new THREE.Color(0x87ceeb);
@@ -43,7 +58,6 @@ function startGame() {
         );
 
 
-    // KAMERA
     camera =
         new THREE.PerspectiveCamera(
             65,
@@ -54,22 +68,21 @@ function startGame() {
         );
 
 
-    // RENDERER
     renderer =
         new THREE.WebGLRenderer({
             canvas:
                 document.getElementById(
                     "gameCanvas"
                 ),
-            antialias: true,
-            powerPreference:
-                "high-performance"
+            antialias: true
         });
+
 
     renderer.setSize(
         window.innerWidth,
         window.innerHeight
     );
+
 
     renderer.setPixelRatio(
         Math.min(
@@ -79,7 +92,39 @@ function startGame() {
     );
 
 
-    // IŞIK
+    createLights();
+
+    createWorld();
+
+    loadBMW();
+
+    controls();
+
+    window.addEventListener(
+        "resize",
+        resize
+    );
+
+    animate();
+}
+
+
+/* =========================
+   IŞIK
+========================= */
+
+function createLights() {
+
+    const skyLight =
+        new THREE.HemisphereLight(
+            0xffffff,
+            0x555555,
+            2
+        );
+
+    scene.add(skyLight);
+
+
     const sun =
         new THREE.DirectionalLight(
             0xffffff,
@@ -93,49 +138,24 @@ function startGame() {
     );
 
     scene.add(sun);
-
-
-    const ambient =
-        new THREE.HemisphereLight(
-            0xffffff,
-            0x555555,
-            2
-        );
-
-    scene.add(ambient);
-
-
-    // DÜNYA
-    createWorld();
-
-
-    // ARABA
-    loadCar();
-
-
-    // KONTROLLER
-    setupControls();
-
-
-    // EKRAN
-    window.addEventListener(
-        "resize",
-        resize
-    );
-
-
-    // OYUN
-    animate();
 }
 
 
-// ==========================================
-// DÜNYA
-// ==========================================
+/* =========================
+   DÜNYA
+========================= */
 
 function createWorld() {
 
+    loadingText.textContent =
+        "Dünya hazırlanıyor...";
+
+    loadingProgress.style.width =
+        "20%";
+
+
     // ÇİM
+
     const ground =
         new THREE.Mesh(
             new THREE.PlaneGeometry(
@@ -153,7 +173,7 @@ function createWorld() {
     scene.add(ground);
 
 
-    // YOLLAR
+    // ANA YOLLAR
 
     createRoad(
         0,
@@ -190,6 +210,7 @@ function createWorld() {
                 Math.abs(x) < 35 ||
                 Math.abs(z) < 35
             ) {
+
                 continue;
             }
 
@@ -205,7 +226,7 @@ function createWorld() {
 
     for (
         let i = 0;
-        i < 60;
+        i < 50;
         i++
     ) {
 
@@ -222,12 +243,16 @@ function createWorld() {
             z
         );
     }
+
+
+    loadingProgress.style.width =
+        "55%";
 }
 
 
-// ==========================================
-// YOL
-// ==========================================
+/* =========================
+   YOL
+========================= */
 
 function createRoad(
     x,
@@ -264,37 +289,28 @@ function createRoad(
 }
 
 
-// ==========================================
-// BİNA
-// ==========================================
+/* =========================
+   BİNA
+========================= */
 
 function createBuilding(
     x,
     z
 ) {
 
-    const width =
-        15 +
-        Math.random() * 12;
-
-    const depth =
-        15 +
-        Math.random() * 12;
-
     const height =
         15 +
-        Math.random() * 40;
+        Math.random() * 35;
 
     const building =
         new THREE.Mesh(
             new THREE.BoxGeometry(
-                width,
+                18,
                 height,
-                depth
+                18
             ),
             new THREE.MeshStandardMaterial({
-                color:
-                    0x777777
+                color: 0x777777
             })
         );
 
@@ -308,9 +324,9 @@ function createBuilding(
 }
 
 
-// ==========================================
-// AĞAÇ
-// ==========================================
+/* =========================
+   AĞAÇ
+========================= */
 
 function createTree(
     x,
@@ -360,17 +376,17 @@ function createTree(
 }
 
 
-// ==========================================
-// BMW YÜKLE
-// ==========================================
+/* =========================
+   BMW
+========================= */
 
-function loadCar() {
+function loadBMW() {
 
     loadingText.textContent =
         "BMW yükleniyor...";
 
     loadingProgress.style.width =
-        "10%";
+        "60%";
 
 
     const loader =
@@ -398,9 +414,6 @@ function loadCar() {
             car.rotation.y =
                 Math.PI;
 
-
-            // Model biraz büyük/küçük
-            // olursa buradan değiştirebiliriz
 
             car.scale.set(
                 1,
@@ -461,17 +474,14 @@ function loadCar() {
                         100
                     );
 
-
                 loadingText.textContent =
                     "BMW yükleniyor %" +
                     percent;
 
-
                 loadingProgress.style.width =
-                    Math.min(
-                        percent,
-                        100
-                    ) + "%";
+                    (60 +
+                    percent * 0.4) +
+                    "%";
             }
         },
 
@@ -479,14 +489,11 @@ function loadCar() {
         function(error) {
 
             console.error(
-                "BMW HATASI:",
                 error
             );
 
-
             loadingText.textContent =
                 "BMW yüklenemedi!";
-
 
             loadingProgress.style.width =
                 "100%";
@@ -495,35 +502,14 @@ function loadCar() {
 }
 
 
-// ==========================================
-// MOBİL KONTROLLER
-// ==========================================
+/* =========================
+   MOBİL KONTROLLER
+========================= */
 
-function setupControls() {
+function controls() {
 
-    const gasButton =
-        document.getElementById(
-            "gasButton"
-        );
-
-    const brakeButton =
-        document.getElementById(
-            "brakeButton"
-        );
-
-    const leftButton =
-        document.getElementById(
-            "leftButton"
-        );
-
-    const rightButton =
-        document.getElementById(
-            "rightButton"
-        );
-
-
-    holdButton(
-        gasButton,
+    hold(
+        "gasButton",
         function() {
             gas = true;
         },
@@ -533,8 +519,8 @@ function setupControls() {
     );
 
 
-    holdButton(
-        brakeButton,
+    hold(
+        "brakeButton",
         function() {
             brake = true;
         },
@@ -544,8 +530,8 @@ function setupControls() {
     );
 
 
-    holdButton(
-        leftButton,
+    hold(
+        "leftButton",
         function() {
             left = true;
         },
@@ -555,8 +541,8 @@ function setupControls() {
     );
 
 
-    holdButton(
-        rightButton,
+    hold(
+        "rightButton",
         function() {
             right = true;
         },
@@ -567,26 +553,30 @@ function setupControls() {
 }
 
 
-// ==========================================
-// BUTON
-// ==========================================
+/* =========================
+   BUTON
+========================= */
 
-function holdButton(
-    button,
+function hold(
+    id,
     down,
     up
 ) {
 
+    const button =
+        document.getElementById(id);
+
+
     button.addEventListener(
         "pointerdown",
-        function(e) {
+        function(event) {
 
-            e.preventDefault();
+            event.preventDefault();
 
             down();
 
             button.setPointerCapture(
-                e.pointerId
+                event.pointerId
             );
         }
     );
@@ -594,9 +584,9 @@ function holdButton(
 
     button.addEventListener(
         "pointerup",
-        function(e) {
+        function(event) {
 
-            e.preventDefault();
+            event.preventDefault();
 
             up();
         }
@@ -613,9 +603,9 @@ function holdButton(
 }
 
 
-// ==========================================
-// ARABA
-// ==========================================
+/* =========================
+   ARABA
+========================= */
 
 function updateCar() {
 
@@ -647,7 +637,7 @@ function updateCar() {
     if (brake) {
 
         speed -=
-            BRAKE;
+            BRAKE_POWER;
 
         if (
             speed < 0
@@ -665,19 +655,14 @@ function updateCar() {
         !brake
     ) {
 
+        speed -=
+            FRICTION;
+
         if (
-            speed > 0
+            speed < 0
         ) {
 
-            speed -=
-                FRICTION;
-
-            if (
-                speed < 0
-            ) {
-
-                speed = 0;
-            }
+            speed = 0;
         }
     }
 
@@ -691,21 +676,18 @@ function updateCar() {
         if (left) {
 
             car.rotation.y +=
-                0.035 *
-                speed;
+                0.035 * speed;
         }
-
 
         if (right) {
 
             car.rotation.y -=
-                0.035 *
-                speed;
+                0.035 * speed;
         }
     }
 
 
-    // HAREKET
+    // İLERİ
 
     const direction =
         new THREE.Vector3(
@@ -729,22 +711,21 @@ function updateCar() {
 
     // HIZ
 
-    const kmh =
+    document.getElementById(
+        "speed"
+    ).textContent =
         Math.round(
             speed * 120
         );
 
 
-    document.getElementById(
-        "speed"
-    ).textContent =
-        kmh;
+    updateCamera();
 }
 
 
-// ==========================================
-// KAMERA
-// ==========================================
+/* =========================
+   KAMERA
+========================= */
 
 function updateCamera() {
 
@@ -790,9 +771,9 @@ function updateCamera() {
 }
 
 
-// ==========================================
-// OYUN DÖNGÜSÜ
-// ==========================================
+/* =========================
+   OYUN
+========================= */
 
 function animate() {
 
@@ -803,8 +784,6 @@ function animate() {
 
     updateCar();
 
-    updateCamera();
-
 
     renderer.render(
         scene,
@@ -813,9 +792,9 @@ function animate() {
 }
 
 
-// ==========================================
-// EKRAN
-// ==========================================
+/* =========================
+   RESIZE
+========================= */
 
 function resize() {
 
@@ -831,10 +810,3 @@ function resize() {
         window.innerHeight
     );
 }
-
-
-// ==========================================
-// BAŞLAT
-// ==========================================
-
-startGame();
