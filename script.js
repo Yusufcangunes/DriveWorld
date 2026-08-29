@@ -1,135 +1,99 @@
-// ============================================
-// DRIVEWORLD
-// Mobil açık dünya araba oyunu
-// BMW GLB modeli
-// ============================================
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
 
 let scene;
 let camera;
 let renderer;
-
 let car = null;
-
-let clock;
 
 let speed = 0;
 
-let steering = 0;
+let gas = false;
+let brake = false;
+let left = false;
+let right = false;
 
-let gasPressed = false;
-let brakePressed = false;
+const MAX_SPEED = 1.2;
+const ACCELERATION = 0.025;
+const BRAKE = 0.06;
+const FRICTION = 0.012;
 
-let leftPressed = false;
-let rightPressed = false;
+const loading = document.getElementById("loading");
+const loadingText = document.getElementById("loadingText");
+const loadingProgress = document.getElementById("loadingProgress");
 
-let wheels = [];
 
-const MAX_SPEED = 0.85;
-const REVERSE_SPEED = 0.35;
+// ==========================================
+// OYUNU BAŞLAT
+// ==========================================
 
-const ACCELERATION = 0.018;
-const BRAKE_POWER = 0.035;
+function startGame() {
 
-const FRICTION = 0.008;
+    // SAHNE
+    scene = new THREE.Scene();
 
-const TURN_SPEED = 0.035;
+    scene.background =
+        new THREE.Color(0x87ceeb);
 
-// ============================================
-// BAŞLAT
-// ============================================
-
-window.addEventListener("load", init);
-
-function init() {
-
-    try {
-
-        clock = new THREE.Clock();
-
-        // SAHNE
-        scene = new THREE.Scene();
-
-        scene.background = new THREE.Color(0x87ceeb);
-
-        scene.fog = new THREE.Fog(
+    scene.fog =
+        new THREE.Fog(
             0x87ceeb,
-            80,
+            100,
             500
         );
 
-        // KAMERA
-        camera = new THREE.PerspectiveCamera(
-            60,
-            window.innerWidth / window.innerHeight,
+
+    // KAMERA
+    camera =
+        new THREE.PerspectiveCamera(
+            65,
+            window.innerWidth /
+            window.innerHeight,
             0.1,
             1000
         );
 
-        camera.position.set(
-            0,
-            5,
-            10
-        );
 
-        // RENDERER
-        const canvas =
-            document.getElementById("gameCanvas");
-
-        renderer = new THREE.WebGLRenderer({
-            canvas: canvas,
+    // RENDERER
+    renderer =
+        new THREE.WebGLRenderer({
+            canvas:
+                document.getElementById(
+                    "gameCanvas"
+                ),
             antialias: true,
-            powerPreference: "high-performance"
+            powerPreference:
+                "high-performance"
         });
 
-        renderer.setSize(
-            window.innerWidth,
-            window.innerHeight
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+
+    renderer.setPixelRatio(
+        Math.min(
+            window.devicePixelRatio,
+            1.5
+        )
+    );
+
+
+    // IŞIK
+    const sun =
+        new THREE.DirectionalLight(
+            0xffffff,
+            2.5
         );
 
-        renderer.setPixelRatio(
-            Math.min(window.devicePixelRatio, 1.5)
-        );
+    sun.position.set(
+        100,
+        150,
+        100
+    );
 
-        renderer.shadowMap.enabled = true;
+    scene.add(sun);
 
-        renderer.shadowMap.type =
-            THREE.PCFSoftShadowMap;
-
-        // IŞIKLAR
-        createLights();
-
-        // DÜNYA
-        createWorld();
-
-        // ARABA
-        loadCar();
-
-        // KONTROLLER
-        setupControls();
-
-        // RESIZE
-        window.addEventListener(
-            "resize",
-            onResize
-        );
-
-        animate();
-
-    } catch (error) {
-
-        console.error(error);
-
-        showError(
-            "Oyun başlatılamadı."
-        );
-    }
-}
-
-// ============================================
-// IŞIK
-// ============================================
-
-function createLights() {
 
     const ambient =
         new THREE.HemisphereLight(
@@ -140,104 +104,91 @@ function createLights() {
 
     scene.add(ambient);
 
-    const sun =
-        new THREE.DirectionalLight(
-            0xffffff,
-            3
-        );
 
-    sun.position.set(
-        100,
-        150,
-        100
+    // DÜNYA
+    createWorld();
+
+
+    // ARABA
+    loadCar();
+
+
+    // KONTROLLER
+    setupControls();
+
+
+    // EKRAN
+    window.addEventListener(
+        "resize",
+        resize
     );
 
-    sun.castShadow = true;
 
-    sun.shadow.mapSize.width = 1024;
-    sun.shadow.mapSize.height = 1024;
-
-    sun.shadow.camera.left = -200;
-    sun.shadow.camera.right = 200;
-    sun.shadow.camera.top = 200;
-    sun.shadow.camera.bottom = -200;
-
-    scene.add(sun);
+    // OYUN
+    animate();
 }
 
-// ============================================
+
+// ==========================================
 // DÜNYA
-// ============================================
+// ==========================================
 
 function createWorld() {
 
-    // ZEMİN
-    const groundGeometry =
-        new THREE.PlaneGeometry(
-            1000,
-            1000
-        );
-
-    const groundMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x3d813b
-        });
-
+    // ÇİM
     const ground =
         new THREE.Mesh(
-            groundGeometry,
-            groundMaterial
+            new THREE.PlaneGeometry(
+                1000,
+                1000
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x3d8b40
+            })
         );
 
     ground.rotation.x =
         -Math.PI / 2;
 
-    ground.receiveShadow = true;
-
     scene.add(ground);
 
-    // ANA YOL
+
+    // YOLLAR
+
     createRoad(
         0,
         0,
         1000,
-        18,
+        20,
         0
     );
 
-    // YAN YOLLAR
     createRoad(
         0,
         0,
         1000,
-        14,
+        20,
         Math.PI / 2
     );
 
-    createRoad(
-        0,
-        120,
-        700,
-        12,
-        0
-    );
-
-    createRoad(
-        120,
-        0,
-        700,
-        12,
-        Math.PI / 2
-    );
 
     // BİNALAR
-    for (let x = -180; x <= 180; x += 45) {
 
-        for (let z = -180; z <= 180; z += 45) {
+    for (
+        let x = -180;
+        x <= 180;
+        x += 45
+    ) {
+
+        for (
+            let z = -180;
+            z <= 180;
+            z += 45
+        ) {
 
             if (
-                Math.abs(x) < 25 ||
-                Math.abs(z) < 25
+                Math.abs(x) < 35 ||
+                Math.abs(z) < 35
             ) {
                 continue;
             }
@@ -249,29 +200,34 @@ function createWorld() {
         }
     }
 
+
     // AĞAÇLAR
-    for (let i = 0; i < 80; i++) {
+
+    for (
+        let i = 0;
+        i < 60;
+        i++
+    ) {
 
         const x =
-            (Math.random() - 0.5) * 700;
+            (Math.random() - 0.5) *
+            700;
 
         const z =
-            (Math.random() - 0.5) * 700;
+            (Math.random() - 0.5) *
+            700;
 
-        if (
-            Math.abs(x) < 40 &&
-            Math.abs(z) < 40
-        ) {
-            continue;
-        }
-
-        createTree(x, z);
+        createTree(
+            x,
+            z
+        );
     }
 }
 
-// ============================================
+
+// ==========================================
 // YOL
-// ============================================
+// ==========================================
 
 function createRoad(
     x,
@@ -281,21 +237,15 @@ function createRoad(
     rotation
 ) {
 
-    const geometry =
-        new THREE.PlaneGeometry(
-            length,
-            width
-        );
-
-    const material =
-        new THREE.MeshStandardMaterial({
-            color: 0x292929
-        });
-
     const road =
         new THREE.Mesh(
-            geometry,
-            material
+            new THREE.PlaneGeometry(
+                length,
+                width
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x292929
+            })
         );
 
     road.rotation.x =
@@ -310,64 +260,13 @@ function createRoad(
         z
     );
 
-    road.receiveShadow = true;
-
     scene.add(road);
-
-    // ŞERİT
-    const lineMaterial =
-        new THREE.MeshBasicMaterial({
-            color: 0xffffff
-        });
-
-    for (
-        let i = -length / 2;
-        i < length / 2;
-        i += 12
-    ) {
-
-        const lineGeometry =
-            new THREE.PlaneGeometry(
-                5,
-                0.25
-            );
-
-        const line =
-            new THREE.Mesh(
-                lineGeometry,
-                lineMaterial
-            );
-
-        line.rotation.x =
-            -Math.PI / 2;
-
-        line.rotation.z =
-            rotation;
-
-        if (rotation === 0) {
-
-            line.position.set(
-                x + i,
-                0.04,
-                z
-            );
-
-        } else {
-
-            line.position.set(
-                x,
-                0.04,
-                z + i
-            );
-        }
-
-        scene.add(line);
-    }
 }
 
-// ============================================
+
+// ==========================================
 // BİNA
-// ============================================
+// ==========================================
 
 function createBuilding(
     x,
@@ -375,35 +274,28 @@ function createBuilding(
 ) {
 
     const width =
-        18 + Math.random() * 10;
+        15 +
+        Math.random() * 12;
 
     const depth =
-        18 + Math.random() * 10;
+        15 +
+        Math.random() * 12;
 
     const height =
-        15 + Math.random() * 45;
-
-    const geometry =
-        new THREE.BoxGeometry(
-            width,
-            height,
-            depth
-        );
-
-    const material =
-        new THREE.MeshStandardMaterial({
-            color:
-                new THREE.Color().setHSL(
-                    Math.random(),
-                    0.25,
-                    0.5
-                )
-        });
+        15 +
+        Math.random() * 40;
 
     const building =
         new THREE.Mesh(
-            geometry,
-            material
+            new THREE.BoxGeometry(
+                width,
+                height,
+                depth
+            ),
+            new THREE.MeshStandardMaterial({
+                color:
+                    0x777777
+            })
         );
 
     building.position.set(
@@ -412,16 +304,13 @@ function createBuilding(
         z
     );
 
-    building.castShadow = true;
-
-    building.receiveShadow = true;
-
     scene.add(building);
 }
 
-// ============================================
+
+// ==========================================
 // AĞAÇ
-// ============================================
+// ==========================================
 
 function createTree(
     x,
@@ -431,9 +320,9 @@ function createTree(
     const trunk =
         new THREE.Mesh(
             new THREE.CylinderGeometry(
-                0.7,
-                0.9,
-                5
+                0.6,
+                0.8,
+                4
             ),
             new THREE.MeshStandardMaterial({
                 color: 0x704214
@@ -442,18 +331,17 @@ function createTree(
 
     trunk.position.set(
         x,
-        2.5,
+        2,
         z
     );
 
-    trunk.castShadow = true;
-
     scene.add(trunk);
+
 
     const leaves =
         new THREE.Mesh(
             new THREE.SphereGeometry(
-                3.5,
+                3,
                 12,
                 12
             ),
@@ -464,55 +352,41 @@ function createTree(
 
     leaves.position.set(
         x,
-        7,
+        6,
         z
     );
-
-    leaves.castShadow = true;
 
     scene.add(leaves);
 }
 
-// ============================================
+
+// ==========================================
 // BMW YÜKLE
-// ============================================
+// ==========================================
 
 function loadCar() {
 
-    setLoading(
-        "BMW hazırlanıyor...",
-        20
-    );
+    loadingText.textContent =
+        "BMW yükleniyor...";
 
-    if (
-        typeof THREE.GLTFLoader ===
-        "undefined"
-    ) {
+    loadingProgress.style.width =
+        "10%";
 
-        showError(
-            "GLTFLoader yüklenemedi."
-        );
-
-        return;
-    }
 
     const loader =
-        new THREE.GLTFLoader();
+        new GLTFLoader();
+
 
     loader.load(
 
         "./bmw.glb",
 
+
         function(gltf) {
 
-            car = gltf.scene;
+            car =
+                gltf.scene;
 
-            // MODEL BOYUTU
-            car.scale.set(
-                1,
-                1,
-                1
-            );
 
             car.position.set(
                 0,
@@ -520,8 +394,20 @@ function loadCar() {
                 0
             );
 
+
             car.rotation.y =
                 Math.PI;
+
+
+            // Model biraz büyük/küçük
+            // olursa buradan değiştirebiliriz
+
+            car.scale.set(
+                1,
+                1,
+                1
+            );
+
 
             car.traverse(
                 function(object) {
@@ -535,159 +421,157 @@ function loadCar() {
 
                         object.receiveShadow =
                             true;
-
-                        // Tekerleri bul
-                        const name =
-                            object.name.toLowerCase();
-
-                        if (
-                            name.includes("wheel") ||
-                            name.includes("tire") ||
-                            name.includes("tyre")
-                        ) {
-
-                            wheels.push(
-                                object
-                            );
-                        }
                     }
                 }
             );
 
+
             scene.add(car);
 
-            setLoading(
-                "Dünya hazırlanıyor...",
-                80
-            );
+
+            loadingProgress.style.width =
+                "100%";
+
+            loadingText.textContent =
+                "Oyun hazır!";
+
 
             setTimeout(
                 function() {
 
-                    hideLoading();
+                    loading.style.display =
+                        "none";
 
                 },
                 500
             );
         },
 
+
         function(xhr) {
 
-            if (xhr.total > 0) {
+            if (
+                xhr.total > 0
+            ) {
 
                 const percent =
-                    (xhr.loaded /
-                        xhr.total) * 100;
+                    Math.round(
+                        xhr.loaded /
+                        xhr.total *
+                        100
+                    );
 
-                setLoading(
-                    "BMW yükleniyor... " +
-                    Math.round(percent) +
-                    "%",
-                    20 +
-                    percent * 0.6
-                );
+
+                loadingText.textContent =
+                    "BMW yükleniyor %" +
+                    percent;
+
+
+                loadingProgress.style.width =
+                    Math.min(
+                        percent,
+                        100
+                    ) + "%";
             }
         },
+
 
         function(error) {
 
             console.error(
-                "BMW yükleme hatası:",
+                "BMW HATASI:",
                 error
             );
 
-            showError(
-                "bmw.glb yüklenemedi. " +
-                "Dosya adını kontrol et."
-            );
+
+            loadingText.textContent =
+                "BMW yüklenemedi!";
+
+
+            loadingProgress.style.width =
+                "100%";
         }
     );
 }
 
-// ============================================
-// KONTROLLER
-// ============================================
+
+// ==========================================
+// MOBİL KONTROLLER
+// ==========================================
 
 function setupControls() {
 
-    const left =
-        document.getElementById(
-            "leftButton"
-        );
-
-    const right =
-        document.getElementById(
-            "rightButton"
-        );
-
-    const gas =
+    const gasButton =
         document.getElementById(
             "gasButton"
         );
 
-    const brake =
+    const brakeButton =
         document.getElementById(
             "brakeButton"
         );
 
-    // SOL
-    buttonHold(
-        left,
+    const leftButton =
+        document.getElementById(
+            "leftButton"
+        );
 
+    const rightButton =
+        document.getElementById(
+            "rightButton"
+        );
+
+
+    holdButton(
+        gasButton,
         function() {
-            leftPressed = true;
+            gas = true;
         },
-
         function() {
-            leftPressed = false;
+            gas = false;
         }
     );
 
-    // SAĞ
-    buttonHold(
-        right,
 
+    holdButton(
+        brakeButton,
         function() {
-            rightPressed = true;
+            brake = true;
         },
-
         function() {
-            rightPressed = false;
+            brake = false;
         }
     );
 
-    // GAZ
-    buttonHold(
-        gas,
 
+    holdButton(
+        leftButton,
         function() {
-            gasPressed = true;
+            left = true;
         },
-
         function() {
-            gasPressed = false;
+            left = false;
         }
     );
 
-    // FREN
-    buttonHold(
-        brake,
 
+    holdButton(
+        rightButton,
         function() {
-            brakePressed = true;
+            right = true;
         },
-
         function() {
-            brakePressed = false;
+            right = false;
         }
     );
 }
 
-// ============================================
-// BUTON BASILI TUTMA
-// ============================================
 
-function buttonHold(
+// ==========================================
+// BUTON
+// ==========================================
+
+function holdButton(
     button,
     down,
     up
@@ -695,43 +579,43 @@ function buttonHold(
 
     button.addEventListener(
         "pointerdown",
-        function(event) {
+        function(e) {
 
-            event.preventDefault();
+            e.preventDefault();
 
             down();
+
+            button.setPointerCapture(
+                e.pointerId
+            );
         }
     );
 
+
     button.addEventListener(
         "pointerup",
-        function(event) {
+        function(e) {
 
-            event.preventDefault();
+            e.preventDefault();
 
             up();
         }
     );
 
+
     button.addEventListener(
         "pointercancel",
-        up
-    );
-
-    button.addEventListener(
-        "pointerleave",
         function() {
 
-            if (!button.hasPointerCapture) {
-                up();
-            }
+            up();
         }
     );
 }
 
-// ============================================
-// ARABA FİZİĞİ
-// ============================================
+
+// ==========================================
+// ARABA
+// ==========================================
 
 function updateCar() {
 
@@ -739,10 +623,13 @@ function updateCar() {
         return;
     }
 
-    // GAZ
-    if (gasPressed) {
 
-        speed += ACCELERATION;
+    // GAZ
+
+    if (gas) {
+
+        speed +=
+            ACCELERATION;
 
         if (
             speed >
@@ -754,79 +641,72 @@ function updateCar() {
         }
     }
 
+
     // FREN
-    else if (brakePressed) {
 
-        if (speed > 0) {
+    if (brake) {
 
-            speed -= BRAKE_POWER;
+        speed -=
+            BRAKE;
 
-            if (speed < 0) {
-                speed = 0;
-            }
+        if (
+            speed < 0
+        ) {
 
-        } else {
-
-            // Geri git
-            speed -=
-                ACCELERATION * 0.45;
-
-            if (
-                speed <
-                -REVERSE_SPEED
-            ) {
-
-                speed =
-                    -REVERSE_SPEED;
-            }
+            speed = 0;
         }
     }
+
 
     // SÜRTÜNME
-    else {
 
-        if (speed > 0) {
+    if (
+        !gas &&
+        !brake
+    ) {
 
-            speed -= FRICTION;
+        if (
+            speed > 0
+        ) {
 
-            if (speed < 0) {
-                speed = 0;
-            }
+            speed -=
+                FRICTION;
 
-        } else if (speed < 0) {
+            if (
+                speed < 0
+            ) {
 
-            speed += FRICTION;
-
-            if (speed > 0) {
                 speed = 0;
             }
         }
     }
 
+
     // DİREKSİYON
-    steering = 0;
 
-    if (leftPressed) {
-        steering = 1;
-    }
-
-    if (rightPressed) {
-        steering = -1;
-    }
-
-    // DÖNÜŞ
     if (
-        Math.abs(speed) >
-        0.02
+        speed > 0.02
     ) {
 
-        car.rotation.y +=
-            steering *
-            TURN_SPEED *
-            (speed / MAX_SPEED);
+        if (left) {
+
+            car.rotation.y +=
+                0.035 *
+                speed;
+        }
+
+
+        if (right) {
+
+            car.rotation.y -=
+                0.035 *
+                speed;
+        }
     }
 
+
     // HAREKET
+
     const direction =
         new THREE.Vector3(
             0,
@@ -834,9 +714,11 @@ function updateCar() {
             -1
         );
 
+
     direction.applyQuaternion(
         car.quaternion
     );
+
 
     car.position.add(
         direction.multiplyScalar(
@@ -844,28 +726,25 @@ function updateCar() {
         )
     );
 
-    // HAFİF SÜSPANSİYON
-    car.position.y =
-        0.2;
 
-    // HIZ GÖSTERGESİ
+    // HIZ
+
     const kmh =
         Math.round(
-            Math.abs(speed) *
-            100
+            speed * 120
         );
+
 
     document.getElementById(
         "speed"
-    ).textContent = kmh;
-
-    // KAMERA
-    updateCamera();
+    ).textContent =
+        kmh;
 }
 
-// ============================================
-// TAKİP KAMERASI
-// ============================================
+
+// ==========================================
+// KAMERA
+// ==========================================
 
 function updateCamera() {
 
@@ -873,39 +752,47 @@ function updateCamera() {
         return;
     }
 
-    const cameraOffset =
+
+    const offset =
         new THREE.Vector3(
             0,
-            4.2,
+            4.5,
             8
         );
 
-    cameraOffset.applyQuaternion(
+
+    offset.applyQuaternion(
         car.quaternion
     );
 
-    const targetPosition =
+
+    const target =
         car.position.clone()
-            .add(cameraOffset);
+            .add(offset);
+
 
     camera.position.lerp(
-        targetPosition,
+        target,
         0.08
     );
 
-    const lookAt =
+
+    const look =
         car.position.clone();
 
-    lookAt.y += 1.2;
+
+    look.y += 1;
+
 
     camera.lookAt(
-        lookAt
+        look
     );
 }
 
-// ============================================
-// ANİMASYON
-// ============================================
+
+// ==========================================
+// OYUN DÖNGÜSÜ
+// ==========================================
 
 function animate() {
 
@@ -913,11 +800,11 @@ function animate() {
         animate
     );
 
-    if (!clock) {
-        return;
-    }
 
     updateCar();
+
+    updateCamera();
+
 
     renderer.render(
         scene,
@@ -925,101 +812,12 @@ function animate() {
     );
 }
 
-// ============================================
-// YÜKLEME EKRANI
-// ============================================
 
-function setLoading(
-    text,
-    progress
-) {
+// ==========================================
+// EKRAN
+// ==========================================
 
-    const textElement =
-        document.getElementById(
-            "loadingText"
-        );
-
-    const progressElement =
-        document.getElementById(
-            "loadingProgress"
-        );
-
-    if (textElement) {
-
-        textElement.textContent =
-            text;
-    }
-
-    if (progressElement) {
-
-        progressElement.style.width =
-            progress + "%";
-    }
-}
-
-function hideLoading() {
-
-    const loading =
-        document.getElementById(
-            "loading"
-        );
-
-    loading.style.opacity =
-        "0";
-
-    loading.style.transition =
-        "opacity 0.5s ease";
-
-    setTimeout(
-        function() {
-
-            loading.style.display =
-                "none";
-
-        },
-        500
-    );
-}
-
-function showError(
-    message
-) {
-
-    const text =
-        document.getElementById(
-            "loadingText"
-        );
-
-    if (text) {
-
-        text.textContent =
-            message;
-
-        text.style.color =
-            "#ff5555";
-    }
-
-    const progress =
-        document.getElementById(
-            "loadingProgress"
-        );
-
-    if (progress) {
-
-        progress.style.width =
-            "100%";
-    }
-}
-
-// ============================================
-// EKRAN BOYUTU
-// ============================================
-
-function onResize() {
-
-    if (!camera || !renderer) {
-        return;
-    }
+function resize() {
 
     camera.aspect =
         window.innerWidth /
@@ -1027,8 +825,16 @@ function onResize() {
 
     camera.updateProjectionMatrix();
 
+
     renderer.setSize(
         window.innerWidth,
         window.innerHeight
     );
 }
+
+
+// ==========================================
+// BAŞLAT
+// ==========================================
+
+startGame();
