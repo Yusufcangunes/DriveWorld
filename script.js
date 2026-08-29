@@ -1,121 +1,99 @@
-import * as THREE from
-"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
-
-import { GLTFLoader } from
-"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js";
 
 
-/* =====================================
-   SAHNE
-===================================== */
+// ==============================
+// SAHNE
+// ==============================
 
 const scene = new THREE.Scene();
 
-scene.background =
-    new THREE.Color(0x87ceeb);
+scene.background = new THREE.Color(0x87ceeb);
 
-scene.fog =
-    new THREE.Fog(
-        0x87ceeb,
-        120,
-        500
-    );
+scene.fog = new THREE.Fog(
+    0x87ceeb,
+    80,
+    500
+);
 
 
-/* =====================================
-   KAMERA
-===================================== */
+// ==============================
+// KAMERA
+// ==============================
 
-const camera =
-    new THREE.PerspectiveCamera(
-        65,
-        innerWidth / innerHeight,
-        0.1,
-        1000
-    );
+const camera = new THREE.PerspectiveCamera(
+    65,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+);
+
+camera.position.set(0, 5, 10);
 
 
-/* =====================================
-   RENDERER
-===================================== */
+// ==============================
+// RENDERER
+// ==============================
 
-const renderer =
-    new THREE.WebGLRenderer({
-        antialias: true,
-        powerPreference:
-            "high-performance"
-    });
+const renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
 
 renderer.setSize(
-    innerWidth,
-    innerHeight
+    window.innerWidth,
+    window.innerHeight
 );
 
 renderer.setPixelRatio(
-    Math.min(
-        devicePixelRatio,
-        1.5
-    )
+    Math.min(window.devicePixelRatio, 1.5)
 );
 
-document.body.appendChild(
-    renderer.domElement
+document.body.appendChild(renderer.domElement);
+
+
+// ==============================
+// IŞIK
+// ==============================
+
+const light = new THREE.HemisphereLight(
+    0xffffff,
+    0x555555,
+    2
 );
 
+scene.add(light);
 
-/* =====================================
-   IŞIK
-===================================== */
-
-scene.add(
-    new THREE.HemisphereLight(
-        0xffffff,
-        0x557755,
-        2
-    )
+const sun = new THREE.DirectionalLight(
+    0xffffff,
+    2
 );
 
-const sun =
-    new THREE.DirectionalLight(
-        0xffffff,
-        2
-    );
-
-sun.position.set(
-    100,
-    150,
-    100
-);
+sun.position.set(100, 150, 100);
 
 scene.add(sun);
 
 
-/* =====================================
-   ZEMİN
-===================================== */
+// ==============================
+// ÇİM
+// ==============================
 
-const ground =
-    new THREE.Mesh(
-        new THREE.PlaneGeometry(
-            1000,
-            1000
-        ),
-        new THREE.MeshLambertMaterial({
-            color: 0x3d8b40
-        })
-    );
+const grass = new THREE.Mesh(
+    new THREE.PlaneGeometry(1000, 1000),
+    new THREE.MeshLambertMaterial({
+        color: 0x3f8f3f
+    })
+);
 
-ground.rotation.x =
-    -Math.PI / 2;
+grass.rotation.x = -Math.PI / 2;
 
-scene.add(ground);
+scene.add(grass);
 
 
-/* =====================================
-   YOL
-===================================== */
+// ==============================
+// YOL
+// ==============================
 
-function road(
+function createRoad(
     width,
     length,
     x,
@@ -123,58 +101,60 @@ function road(
     rotation = 0
 ) {
 
-    const object =
-        new THREE.Mesh(
-            new THREE.PlaneGeometry(
-                width,
-                length
-            ),
-            new THREE.MeshLambertMaterial({
-                color: 0x292929
-            })
-        );
+    const road = new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            width,
+            length
+        ),
+        new THREE.MeshLambertMaterial({
+            color: 0x292929
+        })
+    );
 
-    object.rotation.x =
-        -Math.PI / 2;
+    road.rotation.x = -Math.PI / 2;
 
-    object.rotation.z =
-        rotation;
+    road.rotation.z = rotation;
 
-    object.position.set(
+    road.position.set(
         x,
-        0.02,
+        0.03,
         z
     );
 
-    scene.add(object);
+    scene.add(road);
 }
 
-road(22, 1000, 0, 0);
-road(22, 1000, 80, 0);
-road(22, 1000, -80, 0);
 
-road(
+// Ana yollar
+
+createRoad(20, 1000, 0, 0);
+
+createRoad(20, 1000, 80, 0);
+
+createRoad(20, 1000, -80, 0);
+
+createRoad(
     1000,
-    22,
+    20,
     0,
     80,
     Math.PI / 2
 );
 
-road(
+createRoad(
     1000,
-    22,
+    20,
     0,
     -80,
     Math.PI / 2
 );
 
 
-/* =====================================
-   BİNA
-===================================== */
+// ==============================
+// BİNALAR
+// ==============================
 
-function building(
+function createBuilding(
     x,
     z,
     width,
@@ -182,104 +162,86 @@ function building(
     height
 ) {
 
-    const object =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                width,
-                height,
-                depth
-            ),
-            new THREE.MeshLambertMaterial({
-                color:
-                    0x666666 +
-                    Math.floor(
-                        Math.random() *
-                        0x222222
-                    )
-            })
-        );
+    const building = new THREE.Mesh(
+        new THREE.BoxGeometry(
+            width,
+            height,
+            depth
+        ),
+        new THREE.MeshLambertMaterial({
+            color: 0x777777
+        })
+    );
 
-    object.position.set(
+    building.position.set(
         x,
         height / 2,
         z
     );
 
-    scene.add(object);
+    scene.add(building);
 }
 
 
+// Şehir
+
 const buildings = [
-    [-40,-40],
-    [-15,-40],
-    [35,-40],
-    [55,-40],
+    [-45, -45],
+    [-20, -45],
+    [25, -45],
+    [50, -45],
 
-    [-40,-15],
-    [40,-15],
+    [-45, 40],
+    [-20, 40],
+    [25, 40],
+    [50, 40],
 
-    [-40,35],
-    [-15,40],
-    [35,40],
-    [55,35],
+    [-130, -50],
+    [-130, 0],
+    [-130, 50],
 
-    [-120,-40],
-    [-120,10],
-    [-120,60],
+    [130, -50],
+    [130, 0],
+    [130, 50],
 
-    [120,-40],
-    [120,10],
-    [120,60],
+    [-40, 130],
+    [10, 130],
+    [60, 130],
 
-    [-40,120],
-    [10,120],
-    [60,120],
-
-    [-40,-120],
-    [10,-120],
-    [60,-120]
+    [-40, -130],
+    [10, -130],
+    [60, -130]
 ];
 
+for (const pos of buildings) {
 
-for (
-    const position
-    of buildings
-) {
-
-    building(
-        position[0],
-        position[1],
-
-        10 +
-        Math.random() * 7,
-
-        10 +
-        Math.random() * 7,
-
-        10 +
-        Math.random() * 25
+    createBuilding(
+        pos[0],
+        pos[1],
+        12,
+        12,
+        15 + Math.random() * 20
     );
 }
 
 
-/* =====================================
-   BMW
-===================================== */
+// ==============================
+// BMW
+// ==============================
 
 let car = null;
 
-const loader =
-    new GLTFLoader();
+const loader = new GLTFLoader();
 
 const loading =
-    document.getElementById(
-        "loading"
-    );
+    document.getElementById("loading");
 
 const loadingText =
-    document.getElementById(
-        "loadingText"
-    );
+    document.getElementById("loadingText");
+
+
+loadingText.textContent =
+    "BMW yükleniyor...";
 
 
 loader.load(
@@ -296,52 +258,48 @@ loader.load(
             0
         );
 
+        car.rotation.y =
+            Math.PI;
+
+
+        // Model boyutu
+
         car.scale.set(
             1,
             1,
             1
         );
 
-        car.rotation.y =
-            Math.PI;
-
-
-        car.traverse(
-            function(object) {
-
-                if (
-                    object.isMesh
-                ) {
-
-                    object.castShadow =
-                        true;
-
-                    object.receiveShadow =
-                        true;
-                }
-            }
-        );
-
 
         scene.add(car);
 
 
+        console.log(
+            "BMW başarıyla yüklendi!"
+        );
+
+
+        // Yükleme ekranını kapat
+
         loading.style.display =
             "none";
-
-
-        console.log(
-            "BMW M4 yüklendi."
-        );
     },
 
 
-    function() {
+    function(xhr) {
 
-        if (loadingText) {
+        if (xhr.total > 0) {
+
+            const percent =
+                Math.round(
+                    xhr.loaded /
+                    xhr.total *
+                    100
+                );
 
             loadingText.textContent =
-                "BMW yükleniyor...";
+                "BMW yükleniyor %"
+                + percent;
         }
     },
 
@@ -349,142 +307,122 @@ loader.load(
     function(error) {
 
         console.error(
+            "BMW yüklenemedi:",
             error
         );
 
-        if (loadingText) {
+        loadingText.textContent =
+            "BMW dosyası bulunamadı!";
 
-            loadingText.textContent =
-                "BMW dosyası yüklenemedi.";
-        }
+        setTimeout(() => {
 
+            loading.style.display =
+                "none";
 
-        setTimeout(
-            function() {
-
-                loading.style.display =
-                    "none";
-
-            },
-            1500
-        );
+        }, 2000);
     }
 );
 
 
-/* =====================================
-   KONTROLLER
-===================================== */
+// ==============================
+// MOBİL KONTROLLER
+// ==============================
 
 let gas = false;
 let brake = false;
 
-let steering = 0;
+let left = false;
+let right = false;
 
+
+// GAZ
 
 const gasButton =
-    document.getElementById(
-        "gas"
-    );
+    document.getElementById("gas");
+
+gasButton.addEventListener(
+    "touchstart",
+    function(e) {
+
+        e.preventDefault();
+
+        gas = true;
+    },
+    { passive: false }
+);
+
+gasButton.addEventListener(
+    "touchend",
+    function(e) {
+
+        e.preventDefault();
+
+        gas = false;
+    },
+    { passive: false }
+);
+
+
+// FREN
 
 const brakeButton =
-    document.getElementById(
-        "brake"
-    );
+    document.getElementById("brake");
+
+brakeButton.addEventListener(
+    "touchstart",
+    function(e) {
+
+        e.preventDefault();
+
+        brake = true;
+    },
+    { passive: false }
+);
+
+brakeButton.addEventListener(
+    "touchend",
+    function(e) {
+
+        e.preventDefault();
+
+        brake = false;
+    },
+    { passive: false }
+);
+
+
+// SOL
 
 const leftButton =
-    document.getElementById(
-        "left"
-    );
+    document.getElementById("left");
+
+leftButton.addEventListener(
+    "touchstart",
+    function(e) {
+
+        e.preventDefault();
+
+        left = true;
+    },
+    { passive: false }
+);
+
+leftButton.addEventListener(
+    "touchend",
+    function(e) {
+
+        e.preventDefault();
+
+        left = false;
+    },
+    { passive: false }
+);
+
+
+// SAĞ
 
 const rightButton =
-    document.getElementById(
-        "right"
-    );
-
-
-function pressGas(e) {
-
-    e.preventDefault();
-
-    gas = true;
-}
-
-function releaseGas(e) {
-
-    e.preventDefault();
-
-    gas = false;
-}
-
-
-function pressBrake(e) {
-
-    e.preventDefault();
-
-    brake = true;
-}
-
-function releaseBrake(e) {
-
-    e.preventDefault();
-
-    brake = false;
-}
-
-
-gasButton.addEventListener(
-    "touchstart",
-    pressGas,
-    { passive:false }
-);
-
-gasButton.addEventListener(
-    "touchend",
-    releaseGas,
-    { passive:false }
-);
-
-
-brakeButton.addEventListener(
-    "touchstart",
-    pressBrake,
-    { passive:false }
-);
-
-brakeButton.addEventListener(
-    "touchend",
-    releaseBrake,
-    { passive:false }
-);
-
-
-/* Sol */
-
-leftButton.addEventListener(
-    "touchstart",
-    function(e) {
-
-        e.preventDefault();
-
-        steering = -1;
-    },
-    { passive:false }
-);
-
-leftButton.addEventListener(
-    "touchend",
-    function(e) {
-
-        e.preventDefault();
-
-        steering = 0;
-    },
-    { passive:false }
-);
-
-
-/* Sağ */
+    document.getElementById("right");
 
 rightButton.addEventListener(
     "touchstart",
@@ -492,9 +430,9 @@ rightButton.addEventListener(
 
         e.preventDefault();
 
-        steering = 1;
+        right = true;
     },
-    { passive:false }
+    { passive: false }
 );
 
 rightButton.addEventListener(
@@ -503,121 +441,127 @@ rightButton.addEventListener(
 
         e.preventDefault();
 
-        steering = 0;
+        right = false;
     },
-    { passive:false }
+    { passive: false }
 );
 
 
-/* =====================================
-   ARABA FİZİĞİ
-===================================== */
+// ==============================
+// ARABA FİZİĞİ
+// ==============================
 
 let speed = 0;
 
 const maxSpeed = 1.8;
-const acceleration = 0.02;
-const braking = 0.06;
+
+const acceleration = 0.025;
+
+const braking = 0.08;
 
 
 function updateCar() {
 
-    if (!car) {
-        return;
-    }
+    if (!car) return;
 
+
+    // Gaz
 
     if (gas) {
 
-        speed +=
-            acceleration;
+        speed += acceleration;
 
-        if (
-            speed > maxSpeed
-        ) {
+        if (speed > maxSpeed) {
 
-            speed =
-                maxSpeed;
+            speed = maxSpeed;
         }
     }
 
 
+    // Fren
+
     if (brake) {
 
-        speed -=
-            braking;
+        speed -= braking;
 
-        if (
-            speed < 0
-        ) {
+        if (speed < 0) {
 
             speed = 0;
         }
     }
 
 
-    speed *= 0.988;
+    // Sürtünme
 
+    if (!gas && !brake) {
 
-    if (
-        Math.abs(speed) > 0.01
-    ) {
-
-        car.rotation.y -=
-            steering *
-            speed *
-            0.035;
+        speed *= 0.98;
     }
 
+
+    // Direksiyon
+
+    if (left) {
+
+        car.rotation.y +=
+            speed * 0.035;
+    }
+
+    if (right) {
+
+        car.rotation.y -=
+            speed * 0.035;
+    }
+
+
+    // Hareket
 
     car.translateZ(
         -speed
     );
 
 
+    // Hız
+
     const speedElement =
-        document.getElementById(
-            "speed"
-        );
+        document.getElementById("speed");
 
     speedElement.textContent =
         Math.round(
-            speed * 85
+            speed * 80
         );
 }
 
 
-/* =====================================
-   KAMERA
-===================================== */
+// ==============================
+// KAMERA
+// ==============================
 
 function updateCamera() {
 
-    if (!car) {
-        return;
-    }
+    if (!car) return;
 
 
-    const offset =
+    const cameraOffset =
         new THREE.Vector3(
             0,
             4.5,
-            8.5
+            8
         );
 
 
-    offset.applyQuaternion(
+    cameraOffset.applyQuaternion(
         car.quaternion
     );
 
 
-    offset.add(
+    cameraOffset.add(
         car.position
     );
 
 
     camera.position.lerp(
-        offset,
+        cameraOffset,
         0.1
     );
 
@@ -634,16 +578,9 @@ function updateCamera() {
 }
 
 
-/* =====================================
-   OYUN DÖNGÜSÜ
-===================================== */
-
-camera.position.set(
-    0,
-    4,
-    8
-);
-
+// ==============================
+// OYUN DÖNGÜSÜ
+// ==============================
 
 function animate() {
 
@@ -651,9 +588,11 @@ function animate() {
         animate
     );
 
+
     updateCar();
 
     updateCamera();
+
 
     renderer.render(
         scene,
@@ -664,23 +603,23 @@ function animate() {
 animate();
 
 
-/* =====================================
-   EKRAN
-===================================== */
+// ==============================
+// EKRAN BOYUTU
+// ==============================
 
 window.addEventListener(
     "resize",
     function() {
 
         camera.aspect =
-            innerWidth /
-            innerHeight;
+            window.innerWidth /
+            window.innerHeight;
 
         camera.updateProjectionMatrix();
 
         renderer.setSize(
-            innerWidth,
-            innerHeight
+            window.innerWidth,
+            window.innerHeight
         );
     }
 );
