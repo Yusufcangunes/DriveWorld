@@ -15,6 +15,7 @@
     <div id="loading">
         <div class="loading-title">DRIVEWORLD</div>
         <div id="loadingText">Dünya hazırlanıyor...</div>
+
         <div class="loading-bar">
             <div id="loadingProgress"></div>
         </div>
@@ -24,9 +25,7 @@
 
     <div id="gameUI">
 
-        <div class="logo">
-            DRIVEWORLD
-        </div>
+        <div class="logo">DRIVEWORLD</div>
 
         <div class="speed-box">
             <span id="speed">0</span>
@@ -36,11 +35,13 @@
         <div id="mobileControls">
 
             <div id="steering">
-                <button id="leftButton" class="control-button steering-button">
+                <button id="leftButton"
+                        class="control-button steering-button">
                     ◀
                 </button>
 
-                <button id="rightButton" class="control-button steering-button">
+                <button id="rightButton"
+                        class="control-button steering-button">
                     ▶
                 </button>
             </div>
@@ -63,13 +64,8 @@
 
     </div>
 
-    <!-- Three.js -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-
-    <!-- GLTF Loader -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
-
-    <script src="script.js"></script>
+    <!-- ÖNEMLİ: type="module" -->
+    <script type="module" src="script.js"></script>
 
 </body>
 </html>
